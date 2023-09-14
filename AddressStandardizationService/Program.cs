@@ -1,11 +1,27 @@
+using AddressStandardizationService;
+using Microsoft.OpenApi.Models;
+using System.Net.Http.Headers;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Добавьте свои сервисы и компоненты здесь
+builder.Services.AddScoped<IDadataService, DadataService>();
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.Configure<DadataApiSettings>(builder.Configuration.GetSection("DadataApiSettings"));
+builder.Services.AddHttpClient<IDadataService, DadataService>(client =>
+{
+    client.BaseAddress = new Uri("https://cleaner.dadata.ru/api/v1/clean/address");
+    client.DefaultRequestHeaders.Add("Authorization", $"Token {builder.Configuration["DadataApiSettings:ApiKey"]}");
+    client.DefaultRequestHeaders.Add("X-Secret", builder.Configuration["DadataApiSettings:SecretKey"]);
+});
 
+// Add services to the container.
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Address Standardization Service", Version = "v1" });
+});
 
 var app = builder.Build();
 

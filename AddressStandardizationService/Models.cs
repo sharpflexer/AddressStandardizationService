@@ -13,7 +13,7 @@
     // DadataRequestModel - представляет структуру запроса к Dadata API
     public class DadataRequestModel
     {
-        public string Query { get; set; }
+        public string RawAddress { get; set; }
     }
 
     // DadataResponseModel - представляет структуру ответа от Dadata API

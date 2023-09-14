@@ -13,11 +13,7 @@
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<DadataApiSettings>(Configuration.GetSection("DadataApiSettings"));
-            services.AddHttpClient<IDadataService, DadataService>(client =>
-            {
-                client.BaseAddress = new Uri("https://dadata.ru/api/clean/address/");
-                client.DefaultRequestHeaders.Add("Authorization", $"Token {Configuration["DadataApiSettings:ApiKey"]}");
-            });
+            services.AddScoped<IDadataService, DadataService>();
             services.AddAutoMapper(typeof(Startup));
             services.AddCors(options =>
             {
@@ -28,6 +24,12 @@
                                .AllowAnyHeader()
                                .AllowAnyMethod();
                     });
+            });
+            services.AddHttpClient<IDadataService, DadataService>(client =>
+            {
+                client.BaseAddress = new Uri("https://dadata.ru/api/clean/address/");
+                client.DefaultRequestHeaders.Add("Authorization", $"Token {Configuration["DadataApiSettings:ApiKey"]}");
+                client.DefaultRequestHeaders.Add("X-Secret", Configuration["DadataApiSettings:ApiKey"]);
             });
 
         }

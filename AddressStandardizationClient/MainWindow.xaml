@@ -6,17 +6,15 @@
         xmlns:local="clr-namespace:AddressStandardizationClient"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="450" MinWidth="450" MinHeight="450" MaxWidth="450" MaxHeight="450">
-    <Grid>
-        <Label Content="Request" HorizontalAlignment="Left" Margin="10,15,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="requestBox" Margin="10,41,10,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top"/>
-        <Button x:Name="sendButton" Content="Send" HorizontalAlignment="Left" Margin="10,64,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.593,0.155" Width="52" Click="sendButton_ClickAsync"/>
+    <Grid Margin="10,0,0,-9" MinWidth="430" MaxWidth="430" MinHeight="430" MaxHeight="430" HorizontalAlignment="Left" Width="434" Height="443" VerticalAlignment="Bottom">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="0*"/>
+        </Grid.ColumnDefinitions>
+        <Label Content="Request" HorizontalAlignment="Left" Margin="7,20,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="requestBox" Margin="10,46,10,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top"/>
+        <Button x:Name="sendButton" Content="Send" HorizontalAlignment="Left" Margin="10,69,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.593,0.155" Width="52" Click="sendButton_ClickAsync"/>
         <Label Content="Response" HorizontalAlignment="Left" Margin="10,157,0,0" VerticalAlignment="Top"/>
-        <RichTextBox x:Name="responseBox" Margin="10,188,10,10">
-            <FlowDocument>
-                <Paragraph>
-                    <Run Text="RichTextBox"/>
-                </Paragraph>
-            </FlowDocument>
-        </RichTextBox>
+        <DataGrid x:Name="responseGrid" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="10,188,10,19"/>
     </Grid>
 </Window>
