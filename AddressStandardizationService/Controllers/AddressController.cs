@@ -30,7 +30,6 @@ namespace AddressStandardizationService.Controllers
             }
             catch (Exception ex)
             {
-                // Обработка ошибок
                 _logger.LogError($"Error: {ex.Message}");
                 return StatusCode(500, ex.Message);
             }
