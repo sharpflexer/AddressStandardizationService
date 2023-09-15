@@ -4,17 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AddressStandardizationClient
-{
-    [Serializable]
-    public class Metro
-    {
-        public double distance { get; set; }
-        public string line { get; set; }
-        public string name { get; set; }
-    }
 
-    [Serializable]
+namespace AddressStandardizationService.Models
+{
     public class Address
     {
         public string source { get; set; }
@@ -111,3 +103,4 @@ namespace AddressStandardizationClient
     }
 
 }
+

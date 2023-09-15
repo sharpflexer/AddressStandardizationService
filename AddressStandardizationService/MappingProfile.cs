@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using AddressStandardizationService.Models;
+using AutoMapper;
 
 namespace AddressStandardizationService
 {
@@ -6,8 +7,8 @@ namespace AddressStandardizationService
     {
         public MappingProfile()
         {
-            CreateMap<AddressRequestModel, DadataRequestModel>(); // Зависит от структуры Dadata API запроса
-            CreateMap<DadataResponseModel, AddressResponseModel>();
+            CreateMap<Address, ShortAddress>();
+            CreateMap<Address, GeoData>();
         }
     }
 }

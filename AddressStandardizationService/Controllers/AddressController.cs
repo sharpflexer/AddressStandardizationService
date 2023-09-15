@@ -1,7 +1,8 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
+﻿using AddressStandardizationService.Models;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+
 namespace AddressStandardizationService.Controllers
 {
     [Route("api/address")]
@@ -20,30 +21,74 @@ namespace AddressStandardizationService.Controllers
             _logger = logger;
         }
 
-        [HttpPost("standardize")]
-        public async Task<IActionResult> StandardizeAddress([FromBody] AddressRequestModel request)
+        [HttpPost("full")]
+        public async Task<IActionResult> StandardizeFullAddress([FromBody] string request)
         {
             try
             {
-                _logger.LogInformation($"Received request for standardizing address: {request.RawAddress}");
-                // Маппинг из модели запроса вашего приложения в модель запроса Dadata
-                var dadataRequest = _mapper.Map<DadataRequestModel>(request);
-
-                // Выполнение запроса к Dadata API
-                var standardizedAddress = await _dadataService.StandardizeAddressAsync(dadataRequest);
-
-                // Маппинг из модели ответа Dadata в модель ответа вашего приложения
-                var responseModel = _mapper.Map<AddressResponseModel>(standardizedAddress);
-                _logger.LogInformation($"Standardized address: {responseModel.StandardizedAddress}");
-                return Ok(responseModel);
+                return await StandardizeAddress<Address>(request);
             }
             catch (Exception ex)
             {
                 // Обработка ошибок
                 _logger.LogError($"Error: {ex.Message}");
-                return StatusCode(500, "Error");
+                return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpPost("short")]
+        public async Task<IActionResult> StandardizeShortAddress([FromBody] string request)
+        {
+            try
+            {
+                return await StandardizeAddress<ShortAddress>(request);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error: {ex.Message}");
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPost("geodata")]
+        public async Task<IActionResult> StandardizeGeoData([FromBody] string request)
+        {
+            return await TryStandardizeAddress<GeoData>(request);
+        }
+
+        private async Task<IActionResult> TryStandardizeAddress<T>(string request)
+        {
+            try
+            {
+                return await StandardizeAddress<T>(request);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error: {ex.Message}");
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        private async Task<IActionResult> StandardizeAddress<T>(string request)
+        {
+            _logger.LogInformation($"Received request for standardizing address: {request}");
+            var response = await _dadataService.StandardizeAddressAsync(request);
+            string responseContent = await response.Content.ReadAsStringAsync();
+            _logger.LogInformation($"Standardized address: {responseContent}");
+            var addresses = JsonConvert.DeserializeObject<List<Address>>(responseContent);
+            var mappedData = _mapper.Map<List<Address>, List<T>>(addresses);
+            return CheckResponseStatus(response, mappedData);
+        }
+
+
+        private ObjectResult CheckResponseStatus(HttpResponseMessage response, object content)
+        {
+            if (response.IsSuccessStatusCode)
+                return Ok(content);
+            else
+                return BadRequest(response.StatusCode.ToString());
+        }
+
     }
 
 }

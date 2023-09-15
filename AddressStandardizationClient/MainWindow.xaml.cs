@@ -1,9 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using AddressStandardizationClient.Models;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Markup;
@@ -22,56 +24,71 @@ namespace AddressStandardizationClient
 
         private async void sendButton_ClickAsync(object sender, RoutedEventArgs e)
         {
+            string fullAddressUrl = "https://localhost:7227/api/address/full";
+            await GetRequest<Address>(fullAddressUrl);
+        }
+        private async void getShortAddressButton_ClickAsync(object sender, RoutedEventArgs e)
+        {
+            string shortAddressUrl = "https://localhost:7227/api/address/short";
+            await GetRequest<ShortAddress>(shortAddressUrl);
+        }
+        private async void getGeodataButton_ClickAsync(object sender, RoutedEventArgs e)
+        {
+            string geodataAddressUrl = "https://localhost:7227/api/address/geodata";
+            await GetRequest<GeoData>(geodataAddressUrl);
+        }
+
+
+        private async Task GetRequest<T>(string url)
+        {
             var client = new HttpClient();
-            var addressToStandardize = "мск сухонска 11/-89"; // Замените на ваш сырой адрес
-
-            var requestModel = new AddressRequestModel
-            {
-                RawAddress = addressToStandardize
-            };
-
-            var requestJson = JsonConvert.SerializeObject(requestModel);
-
+            var requestJson = JsonConvert.SerializeObject(requestBox.Text);
             var content = new StringContent(requestJson, Encoding.UTF8, "application/json");
-
-            // Замените URL на URL вашего веб-сервиса
-            var apiUrl = "https://localhost:7227/api/address/standardize";
-
             try
             {
-                var response = await client.PostAsync(apiUrl, content);
-
-                if (response.IsSuccessStatusCode)
+                var response = await client.PostAsync(url, content);
+                if (CheckResponseStatus(response))
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    var deserializedObject = JsonConvert.DeserializeObject<AddressResponseModel>(responseContent);
-                    var adresses = JsonConvert.DeserializeObject<List<Root>>(deserializedObject.StandardizedAddress);
-
-                    var originalData = adresses; // Ваши исходные данные
-                    var transposedData = new List<TransposedData>();
-
-                    foreach (var row in originalData)
-                    {
-                        foreach (var property in row.GetType().GetProperties())
-                        {
-                            transposedData.Add(new TransposedData
-                            {
-                                ColumnName = property.Name, // Имя вашего столбца
-                                Value = property.GetValue(row)?.ToString() // Значение ячейки
-                            });
-                        }
-                    }
-                    responseGrid.ItemsSource = transposedData;
-                }
-                else
-                {
-                    throw new Exception("Ошибка: " + response.StatusCode);
+                    var adresses = JsonConvert.DeserializeObject<List<T>>(responseContent);
+                    TransposeGrid(adresses);
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception("Произошла ошибка: " + ex.Message);
+                MessageBox.Show("Произошла ошибка: " + ex.Message);
             }
+        }
+
+        private bool CheckResponseStatus(HttpResponseMessage response)
+        {
+            if (response.IsSuccessStatusCode)
+            {
+                return true;
+            }
+            else
+            {
+                throw new Exception("Ошибка: " + response.StatusCode);
+            }
+        }
+
+        private void TransposeGrid<T>(List<T>? adresses)
+        {
+            var originalData = adresses;
+            var transposedData = new List<TransposedData>();
+
+            foreach (var row in originalData)
+            {
+                foreach (var property in row.GetType().GetProperties())
+                {
+                    transposedData.Add(new TransposedData
+                    {
+                        ColumnName = property.Name, // Имя столбца
+                        Value = property.GetValue(row)?.ToString() // Значение ячейки
+                    });
+                }
+            }
+            responseGrid.ItemsSource = transposedData;
         }
     }
 }

@@ -1,10 +1,8 @@
 using AddressStandardizationService;
 using Microsoft.OpenApi.Models;
-using System.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Добавьте свои сервисы и компоненты здесь
 builder.Services.AddScoped<IDadataService, DadataService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.Configure<DadataApiSettings>(builder.Configuration.GetSection("DadataApiSettings"));
@@ -15,9 +13,7 @@ builder.Services.AddHttpClient<IDadataService, DadataService>(client =>
     client.DefaultRequestHeaders.Add("X-Secret", builder.Configuration["DadataApiSettings:SecretKey"]);
 });
 
-// Add services to the container.
 builder.Services.AddControllers();
-
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Address Standardization Service", Version = "v1" });
@@ -25,7 +21,6 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
